@@ -1,7 +1,7 @@
 
-# 📬 Email Assistant AI 🤖📥
+# NeuraMail
 
-Welcome to **Email Assistant**, your personal AI-powered Gmail butler that reads, replies, and organizes your inbox like a caffeinated octopus with 8 keyboards! 🐙💻💻💻💻💻💻💻💻
+Welcome to **NeuraMail**, your personal AI-powered Gmail butler that reads, replies, and organizes your inbox like a caffeinated octopus with 8 keyboards! 🐙💻💻💻💻💻💻💻💻
 
 ## ✨ What it does
 
