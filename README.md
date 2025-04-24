@@ -1,125 +1,85 @@
 
 # NeuraMail
 
-Welcome to **NeuraMail**, your personal AI-powered Gmail butler that reads, replies, and organizes your inbox like a caffeinated octopus with 8 keyboards! 🐙💻💻💻💻💻💻💻💻
+A smart, scalable, and fully-automated email processing assistant built using **FastAPI**, **MongoDB**, and **Gmail API (OAuth2)**.
 
-## ✨ What it does
+## 🚀 Features
 
-🚀 **Reads unread emails**  
-🕵️‍♂️ **Extracts only the *latest reply*** (no long quote-trains, promise)  
-📎 **Maintains threads like a Gmail ninja**  
-🧠 **Understands who said what using EmailReplyParser magic**  
-📨 **Sends replies via Gmail API with threading like a pro**  
-🧾 **Stores ticketed threads in MongoDB** (because we’re professionals, duh)  
+- **Automated Ticketing System**  
+  Converts incoming emails into support tickets with unique ticket IDs.
 
----
+- **Threaded Conversations**  
+  Emails are threaded and stored based on message context using `Message-ID`, `In-Reply-To`, and `References` headers.
 
-## 🧠 Tech Stack
+- **Smart Reply Extraction**  
+  Extracts only the new reply content using the `email-reply-parser`, discarding quoted messages.
 
-| Tech | Purpose |
-|------|---------|
-| Python 🐍 | Backend wizardry |
-| FastAPI ⚡ | Lightning-fast APIs |
-| Gmail API 📬 | To rule the inbox |
-| OAuth2 🔐 | Auth that’s safe & smooth |
-| MongoDB 🍃 | Store tickets & threads |
-| EmailReplyParser 🧵 | Splits quoted text from actual replies |
-| Google Apps Script 🤖 (optional) | For testing on the Google side |
+- **Database Integration**  
+  Stores complete email threads and updates existing tickets in MongoDB.
 
----
+- **Gmail Integration with OAuth2**  
+  Sends replies via Gmail while maintaining message threading with correct headers.
 
-## ⚙️ Setup Instructions
+## 🛠 Tech Stack
 
-1. Clone the madness:
-   ```bash
-   git clone https://github.com/you/email-assistant.git
-   cd email-assistant
-   ```
+- **Backend**: FastAPI  
+- **Database**: MongoDB  
+- **Email API**: Gmail (OAuth2)  
+- **Parsing**: `email-reply-parser`, `email`, `imaplib`, `smtplib`  
+- **Other**: PyMongo, Uvicorn, Python's built-in `uuid`, `datetime`, etc.
 
-2. Create your virtual cave:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate
-   ```
+## 📁 Project Structure
 
-3. Install the potions:
-   ```bash
-   pip install -r requirements.txt
-   ```
+```
+/app
+  ├── controller/
+  ├── helper/
+  ├── router/
+  ├── models/
+  ├── utils/
+  └── main.py
+```
 
-4. Setup your `.env` with:
-   ```
-   EMAIL_USER=your_email@gmail.com
-   CLIENT_ID=...
-   CLIENT_SECRET=...
-   REFRESH_TOKEN=...
-   ```
+## 📄 Endpoints
 
-5. Fire it up:
-   ```bash
-   uvicorn main:app --reload
-   ```
+- `POST /email/send`: Send a reply email
+- `GET /email/unread`: Fetch unread emails
+- `GET /email/thread/{ticket_id}`: Fetch full thread by ticket ID
 
----
+## 🔐 Authentication
 
-## 🔥 Cool Features
+All email operations use OAuth2 authentication with Google's Gmail API. Make sure to set up your credentials properly in the `token.json` or environment.
 
-### 📩 Fetch Unread Emails
+## 🧪 How to Run
+
 ```bash
-GET /emails/unread
-```
-Returns the freshest replies from users—no more reading the entire conversation thread from the beginning of time.
+# Install dependencies
+pip install -r requirements.txt
 
-### 🧵 Get Full Thread by Ticket
-```bash
-GET /emails/thread/{ticket_id}
+# Run the FastAPI app
+uvicorn app.main:app --reload
 ```
-Get the entire chain of sorrow and hope tied to a ticket.
 
-### 📨 Reply Like a Boss
-```bash
-POST /emails/reply
-```
-Send a reply that lands **inside** the thread—not as a new message! (We know what threading is. We respect it.)
+## 📬 Sample Email Flow
 
-### 🕵️ Retrieve by Message ID
-```bash
-GET /emails/message/{message_id}
-```
-Want to inspect if you’re replying to the right message? Sherlock Holmes mode activated.
+1. Customer sends an email ➝ Parsed and stored with `ticket_no`
+2. Staff replies ➝ Email sent via Gmail with correct headers
+3. Future replies by customer ➝ Appends to the same ticket thread
+
+## ✅ TODO
+
+- Add admin dashboard
+- Include email categorization (e.g., Refunds, Complaints)
+- Add email notification system
 
 ---
 
-## 😎 Sample Payloads
+### ⚠️ Disclaimer
 
-**Reply Example:**
-```json
-{
-  "to_email": "client@example.com",
-  "body": "We’ve processed your refund.",
-  "message_id": "<CAEG-Ar1oQSAMFH8SPAuvy@mail.gmail.com>"
-}
-```
+This project is not affiliated with Google. Use responsibly and respect email usage policies.
 
 ---
 
-## 🧨 Future Ideas
+### 😂 Final Note
 
-- ✅ Smart auto-replies powered by GPT
-- 📅 Auto-schedule meetings from threads
-- 🗂️ Automatic tagging based on request type
-- 🧵 Conversation sentiment heatmaps (yeah, wild!)
-
----
-
-## 🧙‍♂️ Contributors
-
-- **You** – the sorcerer of inbox automation  
-- **GPT + FastAPI** – the spellbook  
-- **MongoDB** – the vault of ticket wisdom  
-
----
-
-## 🫶 Made with love, caffeine & `In-Reply-To` headers.
-
-Give this repo a ⭐ if your inbox needs a hero.
+If this bot ever emails your boss “yes” instead of “yes, absolutely, I’ll get on it right away”, blame the AI—not you. 😉
