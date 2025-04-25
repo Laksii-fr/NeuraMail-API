@@ -24,3 +24,27 @@ def get_all_queries():
         }
     except Exception as e : 
         return f"Error {e}"
+    
+@router.get('/get-all-tickets')
+def get_all_tickets():
+    try : 
+        response = email.get_all_tickets()
+        return {
+            "status": "success",
+            "message": "Tickets Fetched Successfully",
+            "data": response
+        }
+    except Exception as e : 
+        return f"Error {e}"
+
+# @router.get("/get-ticket-by-ticket-id")
+# def get_ticket_by_ticket_id(ticket_id: str):
+#     try : 
+#         response = email.get_ticket_by_ticket_id(ticket_id)
+#         return {
+#             "status": "success",
+#             "message": "Ticket Fetched Successfully",
+#             "data": response
+#         }
+#     except Exception as e : 
+#         return f"Error {e}"

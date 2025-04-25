@@ -70,3 +70,9 @@ def fetch_unread_emails(mail, keyword=None):
 
 def get_all_email():
     return mongo.fetch_all_mails()
+
+def get_all_tickets():
+    return mongo.fetch_all_tickets()
+
+def get_ticket_by_ticket_id(ticket_id):
+    return mongo.fetch_ticket_by_ticket_id(ticket_id)

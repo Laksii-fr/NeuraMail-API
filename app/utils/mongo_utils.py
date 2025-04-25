@@ -3,7 +3,48 @@ from datetime import datetime
 import app.models.model_types as modeltype
 import uuid
 
+def fetch_all_tickets():
+    try:
+        cur = SavedQueries.find(
+            {},  # No filters for now
+            projection={
+                "_id": 0,
+                "ticket_no": 1,
+                "sender_email": 1,
+                "request_type": 1,
+                "Thread": 1
+            }
+        ).sort([("createdAt", -1)])
 
+        result = []
+        for doc in cur:
+            latest_thread = doc.get("Thread", [])
+            latest_description = None
+
+            if latest_thread:
+                # Assuming latest = last in the list (sorted chronologically)
+                latest_description = latest_thread[-1].get("request_description", None)
+
+            result.append({
+                "ticket_no": doc.get("ticket_no"),
+                "sender_email": doc.get("sender_email"),
+                "request_type": doc.get("request_type"),
+                "latest_request_description": latest_description
+            })
+
+        return result
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return f"Something went wrong during fetching Emails. {e}"
+
+def fetch_ticket_by_ticket_id(ticket_id):
+    try:
+        ticket_data = SavedQueries.find_one({"ticket_no": ticket_id})
+        if not ticket_data:
+            raise HTTPException(status_code=404, detail="Ticket not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching ticket: {str(e)}")
 
 def fetch_all_mails():
     try:
