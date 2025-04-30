@@ -22,6 +22,7 @@ EMAIL_IMAP = os.getenv("EMAIL_IMAP")
 SCOPES = ['https://mail.google.com/']
 
 
+
 def create_processed_folder(mail):
     try:
         mail.create("Processed")
@@ -217,3 +218,42 @@ def get_message_subject(service, message_id):
     except Exception as e:
         print(f"Error fetching message subject: {e}")
         return None
+    
+def get_rfc822_message_id(service, internal_id):
+    """
+    Fetches the RFC 822 'Message-ID' from Gmail internal message ID.
+    """
+    try:
+        message = service.users().messages().get(
+            userId='me',
+            id=internal_id,
+            format='metadata',
+            metadataHeaders=['Message-ID']
+        ).execute()
+
+        headers = message.get('payload', {}).get('headers', [])
+        rfc822_id = next((h['value'] for h in headers if h['name'] == 'Message-ID'), None)
+
+        return rfc822_id
+    except Exception as e:
+        print(f"❌ Error fetching RFC 822 Message-ID: {e}")
+        return None
+
+def extract_thread_id(parsed_email):
+    """
+    Extract or generate a thread ID from email headers.
+    Uses References and In-Reply-To headers to identify thread.
+    """
+    # Check if we have References header with multiple IDs (indicating a thread)
+    if parsed_email.get("references"):
+        refs = parsed_email.get("references").strip().split()
+        if refs:
+            # Use the first reference as thread ID (original message)
+            return refs[0]
+    
+    # Check if we have In-Reply-To header
+    if parsed_email.get("in_reply_to"):
+        return parsed_email.get("in_reply_to")
+    
+    # If no thread indicators, use the message's own ID as thread ID
+    return parsed_email.get("message_id")
