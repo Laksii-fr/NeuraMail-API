@@ -10,6 +10,7 @@ class Settings(BaseSettings):
         EMAIL_IMAP : str
         OPENAI_API_KEY : str
         # Cognito settings
+        API_URL: str
         COGNITO_USER_POOL_ID: str
         COGNITO_REGION: str
         COGNITO_CLIENT_ID: str

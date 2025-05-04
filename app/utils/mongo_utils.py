@@ -387,20 +387,20 @@ def enhanced_save_data(body, data, user_id):
                     print(f"Found existing ticket {ticket_no} via message ID: {msg_id}")
                     break
 
-        # 3. Try subject-based matching as fallback (for emails missing proper headers)
-        if (not ticket_no or ticket_no == "None") and body.get("subject"):
-            subject = body.get("subject", "")
-            # Remove "Re:", "Fwd:", etc. prefixes for matching
-            clean_subject = re.sub(r'^(?:Re|Fwd|FW|Fw):\s*', '', subject, flags=re.IGNORECASE).strip()
+        # # 3. Try subject-based matching as fallback (for emails missing proper headers)
+        # if (not ticket_no or ticket_no == "None") and body.get("subject"):
+        #     subject = body.get("subject", "")
+        #     # Remove "Re:", "Fwd:", etc. prefixes for matching
+        #     clean_subject = re.sub(r'^(?:Re|Fwd|FW|Fw):\s*', '', subject, flags=re.IGNORECASE).strip()
             
-            if clean_subject:
-                # Try to find threads with matching subject base
-                thread = SavedQueries.find_one({
-                    "Subject": {"$regex": f"^(?:Re: |Fwd: |FW: |Fw: )?{re.escape(clean_subject)}$", "$options": "i"}
-                })
-                if thread:
-                    ticket_no = thread.get("ticket_no")
-                    print(f"Found existing ticket {ticket_no} via subject matching: {clean_subject}")
+        #     if clean_subject:
+        #         # Try to find threads with matching subject base
+        #         thread = SavedQueries.find_one({
+        #             "Subject": {"$regex": f"^(?:Re: |Fwd: |FW: |Fw: )?{re.escape(clean_subject)}$", "$options": "i"}
+        #         })
+        #         if thread:
+        #             ticket_no = thread.get("ticket_no")
+        #             print(f"Found existing ticket {ticket_no} via subject matching: {clean_subject}")
 
         # 4. If still no ticket → Create new
         if not ticket_no or ticket_no == "None":
@@ -446,13 +446,14 @@ def enhanced_save_data(body, data, user_id):
                         }
                     },
                     "$set": {
+                        "status": "awaiting_agent_reply",
                         "updatedAt": datetime.utcnow()
                     }
                 }
             )
-            print(f"✅ Existing ticket {ticket_no} updated with new message.")
+            print(f"✅ Existing ticket {ticket_no} updated with new message and status set to 'awaiting_agent_reply'.")
 
-        return f"Saved data under ticket {ticket_no}"
+            return f"Saved data under ticket {ticket_no}"
 
     except Exception as e:
         print(f"❌ Error: {e}")
