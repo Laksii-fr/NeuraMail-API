@@ -467,7 +467,7 @@ def create_profile(profile :modeltype.CreateProfile, user_id: str):
             "profile_email": profile.email,
             "auto_reply": profile.auto_reply,
             "assistant_id" : None,
-            "assistant_token": profile.assistant_token,
+            "assistant_token": None,
             "createdAt": datetime.utcnow(),
             "updatedAt": datetime.utcnow()
         }
