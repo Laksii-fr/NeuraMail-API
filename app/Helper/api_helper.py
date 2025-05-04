@@ -2,6 +2,7 @@ import requests
 import os
 import app.Helper.openai_helper as ai_helper
 import app.models.model_types as model_type
+import app.utils.mongo_utils as mongo
 import asyncio
 
 def extract_content_from_json(email_json):
@@ -31,15 +32,16 @@ def extract_content_from_json(email_json):
 
     return extracted_emails
 
-def create_chat(body):
+def create_chat(body, user_id):
     thread = ai_helper.create_thread()
 
     # Formatting message content to be a single dictionary
     formatted_message = f'{{"text": {{"value":"Sender: {body["Sender"]}\\nSubject: {body["Subject"]}\\nEmail: {body["Email"]}"}}}}'
 
+    astId = mongo.get_assistant_id(user_id)
 
     chat_instance = model_type.AssistantChat(
-        astId=os.getenv("AST_ID"),
+        astId=astId,
         threadId=thread.id,
         message=formatted_message  # Pass formatted message as a single dictionary
     )

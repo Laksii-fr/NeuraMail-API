@@ -68,7 +68,7 @@ SCOPES = ['https://mail.google.com/']
 #     print("\nFetched Emails:", emails)
 #     return {"email": emails, "Response": result}
 # =========================================================================== #
-def fetch_unread_emails(mail, keyword=None):
+def fetch_unread_emails(mail, keyword=None, user_id=None):
     """
     Fetch unread emails and properly handle threading for conversation tracking.
     Improved to work with existing MongoDB schema.
@@ -115,12 +115,12 @@ def fetch_unread_emails(mail, keyword=None):
         
         try:
             # Process emails for responses
-            result = email_helper.handle_email_processing(emails)
+            result = email_helper.handle_email_processing(emails, user_id)
             
             # Process each email individually
             for email_data, response_data in zip(detailed_emails, result):
                 # Save to MongoDB - will handle thread detection internally
-                mongo.enhanced_save_data(email_data, response_data)
+                mongo.enhanced_save_data(email_data, response_data, user_id)
                 
                 # Mark as processed
                 email_helper.mark_as_processed(mail, num)
@@ -132,8 +132,6 @@ def fetch_unread_emails(mail, keyword=None):
     mail.expunge()
     print(f"\nFetched {len(emails)} emails")
     return {"email": emails, "Response": result}
-
-# ========================== MONGO DB FUNCTIONS ============================= #
 
 
 def get_all_email():

@@ -1,18 +1,24 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 import app.controller.email as email
 import app.Helper.email_helper as Ehelper
+from app.controller.cognito import get_current_user
 router = APIRouter()
 
 @router.get("/emails")
-def read_emails(keyword: str = None):
-    mail = Ehelper.connect_to_mailbox()
-    if mail:
-        emails = email.fetch_unread_emails(mail, keyword)
-        mail.logout()
-        return {"emails": emails}
-    else:
-        return {"error": "Failed to connect to the mailbox."}
-
+def read_emails(keyword: str = None,
+                user: dict = Depends(get_current_user)):
+    try : 
+        user_id = user.get('login_id')
+        mail = Ehelper.connect_to_mailbox()
+        if mail:
+            emails = email.fetch_unread_emails(mail, keyword, user_id)
+            mail.logout()
+            return {"emails": emails}
+        else:
+            return {"error": "Failed to connect to the mailbox."}
+    except Exception as e : 
+        return f"Error {e}"
+    
 @router.get('/get-all-queries')
 def get_all_queries():
     try : 

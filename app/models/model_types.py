@@ -34,3 +34,9 @@ class EmailReply(BaseModel):
     to_email: str
     body: str
     message_id: str
+
+class CreateProfile(BaseModel):
+    name: str
+    email: EmailStr
+    phone: str
+    auto_reply: bool

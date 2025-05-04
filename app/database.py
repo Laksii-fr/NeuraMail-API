@@ -6,4 +6,5 @@ print('MongoDB Connected Successfully...')
 
 db = client[settings.MONGO_INITDB_DATABASE]
 UsersCollection = db.users_collection
+profiles = db.profiles
 SavedQueries = db.SavedQueries

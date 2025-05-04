@@ -1,7 +1,23 @@
 from app.database import SavedQueries
+from app.database import profiles
 from datetime import datetime
+from app.database import UsersCollection
+from fastapi import HTTPException, status
+from datetime import datetime, timedelta
 import app.models.model_types as modeltype
 import uuid
+# Your MongoDB collection
+
+def get_pending_replies(user_id: str):
+    try:
+        query = {
+            "user_id": user_id,
+            "status": "awaiting_agent_reply"
+        }
+        pending_replies = list(SavedQueries.find(query))
+        return pending_replies
+    except Exception as e:
+        raise Exception(f"Failed to fetch pending replies: {e}")
 
 def fetch_all_tickets():
     try:
@@ -64,9 +80,15 @@ def fetch_all_mails():
         print(f"Error: {e}")
         return f"Something went wrong during fetching Emails.{e}"
         
-from app.database import UsersCollection
-from fastapi import HTTPException, status
-from datetime import datetime, timedelta
+
+def check_user(email: str):
+    """Check if a user exists in the database."""
+    user = UsersCollection.find_one({"email": email})
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with email {email} does not exist."
+        )
 
 def find_user_by_email(email: str):
     """Find a user by email."""
@@ -286,7 +308,8 @@ def update_reply(reply: modeltype.EmailReply, new_message_id: str):
                 "$set": {
                     "Thread.$[elem].Reply": reply.body,
                     "Thread.$[elem].message_id": new_message_id,
-                    "Thread.$[elem].timestamp": datetime.utcnow()
+                    "Thread.$[elem].timestamp": datetime.utcnow(),
+                    "status": "awaiting_user_reply",
                 }
             },
             array_filters=[{"elem.message_id": reply.message_id}]
@@ -331,7 +354,7 @@ def update_ticket_status(ticket_id: str, status: str):
 import email
 import re
 
-def enhanced_save_data(body, data):
+def enhanced_save_data(body, data, user_id):
     print({"Body": body})
     print({"Data": data})
     try:
@@ -383,6 +406,7 @@ def enhanced_save_data(body, data):
         if not ticket_no or ticket_no == "None":
             ticket_no = uuid.uuid4().hex[:16].upper()
             new_query = {
+                "user_id": user_id,
                 "ticket_no": ticket_no,
                 "sender_email": body.get("from"),
                 "Subject": body.get("subject"),
@@ -399,7 +423,7 @@ def enhanced_save_data(body, data):
                     }
                 ],
                 "thread_id": body.get("thread_id") or body.get("message_id"),  # Use message_id as fallback
-                "status": "open",
+                "status": "awaiting_agent_reply",
                 "createdAt": datetime.utcnow(),
                 "updatedAt": datetime.utcnow()
             }
@@ -433,3 +457,134 @@ def enhanced_save_data(body, data):
     except Exception as e:
         print(f"❌ Error: {e}")
         raise ValueError(f"Error saving Queries in Database: {e}")
+    
+def create_profile(profile :modeltype.CreateProfile, user_id: str):
+    try:
+        # Create a new profile in the database
+        new_profile = {
+            "user_id": user_id,
+            "profile_name": profile.name,
+            "profile_email": profile.email,
+            "auto_reply": profile.auto_reply,
+            "assistant_id" : None,
+            "assistant_token": profile.assistant_token,
+            "createdAt": datetime.utcnow(),
+            "updatedAt": datetime.utcnow()
+        }
+        profiles.insert_one(new_profile)
+    except Exception as e:
+        raise e
+    
+def update_profile_with_assistant_id(user_id: str, assistant_token: str):
+    try:
+        # Update the profile with the new assistant token
+        profiles.update_one(
+            {"user_id": user_id},
+            {
+                "$set": {
+                    "assistant_id": assistant_token,
+                    "updatedAt": datetime.utcnow()
+                }
+            }
+        )
+    except Exception as e:
+        raise e
+    
+
+
+def get_assistant_id(user_id: str):
+    try:
+        # Fetch the assistant ID for the given user_id
+        profile = profiles.find_one({"user_id": user_id})
+        if not profile:
+            raise HTTPException(status_code=404, detail="Profile not found")
+        return profile.get("assistant_id")
+    except Exception as e:
+        raise e
+    
+
+def get_thread_context_by_ticket_no(ticket_no: str, userid: str):
+    ticket = SavedQueries.find_one({"ticket_no": ticket_no, "user_id": userid})
+
+    if not ticket:
+        return {"error": "Ticket not found"}
+
+    thread_context = {
+        "request_type": ticket.get("request_type", "General"),
+        "thread": []
+    }
+
+    for entry in ticket.get("Thread", []):
+        # Customer's message
+        if "email_body" in entry and entry["email_body"]:
+            thread_context["thread"].append({
+                "from": "Customer",
+                "body": entry["email_body"]
+            })
+        # Support's reply
+        if "Reply" in entry and entry["Reply"]:
+            thread_context["thread"].append({
+                "from": "Support",
+                "body": entry["Reply"]
+            })
+
+    return thread_context
+
+def update_assistant_token(token: str, user_id: str):
+    try:
+        # Update the assistant token for the given user_id
+        profiles.update_one(
+            {"user_id": user_id},
+            {
+                "$set": {
+                    "assistant_token": token,
+                    "updatedAt": datetime.utcnow()
+                }
+            }
+        )
+    except Exception as e:
+        raise e
+    
+def get_assistant_token(user_id: str):
+    try:
+        # Fetch the assistant ID for the given user_id
+        profile = profiles.find_one({"user_id": user_id})
+        if not profile:
+            raise HTTPException(status_code=404, detail="Profile not found")
+        return profile.get("assistant_token")
+    except Exception as e:
+        raise e
+    
+def get_profile(user_id: str):
+    try:
+        # Fetch the profile for the given user_id
+        profile = profiles.find_one({"user_id": user_id})
+        if not profile:
+            raise HTTPException(status_code=404, detail="Profile not found")
+        return {
+            "profile_name": profile.get("profile_name"),
+            "profile_email": profile.get("profile_email"),
+            "auto_reply": profile.get("auto_reply"),
+            "assistant_id" : profile.get("assistant_id"),
+            "assistant_token": profile.get("assistant_token")
+        }
+    except Exception as e:
+        raise e
+    
+def update_profile(profile : modeltype.CreateProfile, user_id: str):
+    try:
+        # Fetch the profile from the database
+        profiles.update_one(
+            {"user_id": user_id},
+            {
+                "$set": {
+                    "profile_name": profile.name,
+                    "profile_email": profile.email,
+                    "auto_reply": profile.auto_reply,
+                    "assistant_token": profile.assistant_token,
+                    "updatedAt": datetime.utcnow()
+                }
+            }
+        )
+    except Exception as e:
+        raise e

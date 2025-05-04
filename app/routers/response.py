@@ -1,12 +1,12 @@
 from fastapi import APIRouter
 import app.models.model_types as modelType
-import app.controller.response as email
+import app.controller.automated_response as email
 router = APIRouter()
 
 @router.post("/reply-to-email")
 def reply_to_email(reply: modelType.EmailReply):
     try:
-        email.send_email_via_oauth2(reply)
+        email.send_email_via_oauth2()
         return {
             "status": "success",
             "message": "Email sent successfully"

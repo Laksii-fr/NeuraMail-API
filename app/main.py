@@ -5,7 +5,7 @@ import uvicorn
 
 load_dotenv()
 from app.config import settings
-from app.routers import email, auth, response
+from app.routers import email, auth, response, profile, automated_response
 app = FastAPI()
 
 origins = [settings.CLIENT_ORIGIN]
@@ -19,9 +19,10 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, tags=["Authentication"], prefix="/api/auth")
+app.include_router(profile.router, tags=["Profile"], prefix="/api/profile")
 app.include_router(email.router, tags=["Email Processing"], prefix="/api/email")
 app.include_router(response.router, tags=["Email Response"], prefix="/api/response")
-
+app.include_router(automated_response.router, tags=["Auto Response"], prefix="/api/auto/response")
 
 @app.get("/health")
 async def root():

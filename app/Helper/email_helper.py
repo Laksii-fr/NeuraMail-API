@@ -111,7 +111,7 @@ def parse_email_from_bytes(response_part):
     }
 #=============================================================================================================================
 
-def handle_email_processing(emails):
+def handle_email_processing(emails, user_id):
     result = []
     getdata = extract_content_from_json(emails)
     for email_data in getdata:
@@ -120,7 +120,7 @@ def handle_email_processing(emails):
             "Subject": email_data['subject'],
             "Email": email_data['body']
         }
-        response = create_chat(body)
+        response = create_chat(body, user_id)
         data = json.loads(response[0]['message'])
         result.append(data)
         # mongo.save_data(data, body)

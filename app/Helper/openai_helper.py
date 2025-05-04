@@ -1,5 +1,6 @@
 from openai import OpenAI
 import app.models.model_types as model_type
+import app.utils.mongo_utils as mongo
 import asyncio
 import time
 import os
@@ -98,3 +99,13 @@ def prettify_single_response(response):
     }
     print(f"Executed 2.2.2.4.2: Prettified response: {prettified}")
     return prettified
+
+
+def create_assistant(prompt):
+    assistant = client.beta.assistants.create(
+        name="Assistant",
+        instructions=prompt,
+        model="gpt-4o-mini",
+    )
+    print(f"Assistant created with ID: {assistant.id}")
+    return assistant
