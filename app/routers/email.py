@@ -20,7 +20,7 @@ def read_emails(keyword: str = None,
         return f"Error {e}"
     
 @router.get('/get-all-queries')
-def get_all_queries():
+def get_all_queries(user: dict = Depends(get_current_user)):
     try : 
         response = email.get_all_email()
         return {
@@ -32,9 +32,10 @@ def get_all_queries():
         return f"Error {e}"
     
 @router.get('/get-all-tickets')
-def get_all_tickets():
+def get_all_tickets(user: dict = Depends(get_current_user)):
     try : 
-        response = email.get_all_tickets()
+        user_id = user.get('login_id')
+        response = email.get_all_tickets(user_id)
         return {
             "status": "success",
             "message": "Tickets Fetched Successfully",

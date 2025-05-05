@@ -20,7 +20,7 @@ def create_profile(profile: modelType.CreateProfile,
         raise HTTPException(status_code=400, detail=str(e))
     
 @router.post("/update-profile")
-def update_profile(profile : modelType.CreateProfile, user: dict = Depends(get_current_user)):
+def update_profile(profile : modelType.UpdateProfile, user: dict = Depends(get_current_user)):
     try:
         user_id = user.get('login_id')
         response = pro.update_profile(profile, user_id)

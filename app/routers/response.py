@@ -1,12 +1,15 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 import app.models.model_types as modelType
-import app.controller.automated_response as email
+import app.controller.cognito as auth
+import app.controller.response as email
 router = APIRouter()
 
 @router.post("/reply-to-email")
-def reply_to_email(reply: modelType.EmailReply):
+def reply_to_email(reply: modelType.EmailReply,
+                   user: dict = Depends(auth.get_current_user)):
     try:
-        email.send_email_via_oauth2()
+        user_id = user.get('login_id')
+        email.send_email_via_oauth2(reply)
         return {
             "status": "success",
             "message": "Email sent successfully"
@@ -18,8 +21,10 @@ def reply_to_email(reply: modelType.EmailReply):
         }
     
 @router.get("/get-full-thread")
-def get_all_threads(ticket_id: str):
+def get_all_threads(ticket_id: str,
+                    user: dict = Depends(auth.get_current_user)):
     try:
+        user_id = user.get('login_id')
         response = email.get_full_thread(ticket_id)
         return {
             "status": "success",
@@ -33,8 +38,10 @@ def get_all_threads(ticket_id: str):
         }
     
 @router.get("/get-latest-email-threads")
-def get_latest_email_threads_by_ticket_id(ticket_id: str):
+def get_latest_email_threads_by_ticket_id(ticket_id: str,
+                                          user: dict = Depends(auth.get_current_user)):
     try:
+        user_id = user.get('login_id')
         response = email.get_latest_email_message_by_ticket_id(ticket_id)
         return {
             "status": "success",
@@ -48,8 +55,10 @@ def get_latest_email_threads_by_ticket_id(ticket_id: str):
         }
     
 @router.post("/update_ticket_status")
-def update_ticket_status(ticket_id: str, status: str):
+def update_ticket_status(ticket_id: str, status: str,
+                         user: dict = Depends(auth.get_current_user)):
     try:
+        user_id = user.get('login_id')
         response = email.update_ticket_status(ticket_id, status)
         return {
             "status": "success",

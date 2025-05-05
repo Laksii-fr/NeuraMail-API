@@ -19,10 +19,10 @@ def get_pending_replies(user_id: str):
     except Exception as e:
         raise Exception(f"Failed to fetch pending replies: {e}")
 
-def fetch_all_tickets():
+def fetch_all_tickets(user_id):
     try:
         cur = SavedQueries.find(
-            {},  # No filters for now
+            {"user_id" : user_id},
             projection={
                 "_id": 0,
                 "ticket_no": 1,
@@ -466,7 +466,7 @@ def create_profile(profile :modeltype.CreateProfile, user_id: str):
             "user_id": user_id,
             "profile_name": profile.name,
             "profile_email": profile.email,
-            "auto_reply": profile.auto_reply,
+            "auto_reply": False,
             "assistant_id" : None,
             "assistant_token": None,
             "createdAt": datetime.utcnow(),
@@ -572,7 +572,7 @@ def get_profile(user_id: str):
     except Exception as e:
         raise e
     
-def update_profile(profile : modeltype.CreateProfile, user_id: str):
+def update_profile(profile : modeltype.UpdateProfile, user_id: str):
     try:
         # Fetch the profile from the database
         profiles.update_one(
@@ -582,10 +582,19 @@ def update_profile(profile : modeltype.CreateProfile, user_id: str):
                     "profile_name": profile.name,
                     "profile_email": profile.email,
                     "auto_reply": profile.auto_reply,
-                    "assistant_token": profile.assistant_token,
                     "updatedAt": datetime.utcnow()
                 }
             }
         )
+    except Exception as e:
+        raise e
+    
+def check_auto_reply(user_id: str):
+    try:
+        # Fetch the profile for the given user_id
+        profile = profiles.find_one({"user_id": user_id})
+        if not profile:
+            raise HTTPException(status_code=404, detail="Profile not found")
+        return profile.get("auto_reply")
     except Exception as e:
         raise e

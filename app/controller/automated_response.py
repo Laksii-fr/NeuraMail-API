@@ -5,6 +5,7 @@ import app.Helper.api_caller as api_caller
 import app.utils.mongo_utils as mongo
 
 def auto_reply_to_pending_emails(user_id: str):
+    mongo.check_auto_reply(user_id)
     print(f"🔍 Fetching pending replies for user_id: {user_id}")
     pending = get_pending_replies(user_id)
     print(f"📋 Found {len(pending)} pending replies for user_id: {user_id}")

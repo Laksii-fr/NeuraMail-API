@@ -23,7 +23,7 @@ def create_profile(profile :modeltype.CreateProfile, user_id: str):
     except Exception as e:
         raise e
 
-def update_profile(profile : modeltype.CreateProfile, user_id: str):
+def update_profile(profile : modeltype.UpdateProfile, user_id: str):
     try:
         # Fetch the profile from the database
         profiles = mongo.get_profile(user_id)

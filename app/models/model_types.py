@@ -39,4 +39,9 @@ class CreateProfile(BaseModel):
     name: str
     email: EmailStr
     phone: str
+
+class UpdateProfile(BaseModel):
+    name: str
+    email: EmailStr
+    phone: str
     auto_reply: bool
