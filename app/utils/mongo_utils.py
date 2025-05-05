@@ -285,7 +285,10 @@ def get_full_thread(ticket_id):
             summary = {
                 "message_id": item.get("message_id"),
                 "request_type": thread_data.get("request_type"),
-                "request_description": item.get("request_description")
+                "request_description": item.get("request_description"),
+                "email_body": item.get("email_body"),
+                "Reply": item.get("Reply"),
+                "timestamp": item.get("timestamp").strftime("%Y-%m-%d %H:%M:%S") if item.get("timestamp") else None
             }
             print("Summary:", summary)
             thread_summary.append(summary)
