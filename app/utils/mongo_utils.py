@@ -595,6 +595,10 @@ def check_auto_reply(user_id: str):
         profile = profiles.find_one({"user_id": user_id})
         if not profile:
             raise HTTPException(status_code=404, detail="Profile not found")
-        return profile.get("auto_reply")
+        
+        auto_reply = profile.get("auto_reply")
+        if not auto_reply:
+            raise HTTPException(status_code=400, detail="Auto-reply is disabled for this user")
+        return auto_reply
     except Exception as e:
         raise e
